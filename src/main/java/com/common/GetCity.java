@@ -30,23 +30,26 @@ public class GetCity {
             list.add(entry);
             return list;
         }
-        Jedis jedis = jedisPool.getResource();
-        String s = "";
-        for(int i=0;i<1000;i++){
-            if(i<10){
-                s = "00";
-            }else if(i<100){
-                s = "0";
-            }else{
-                s = "";
+        try(Jedis jedis = jedisPool.getResource()){
+            String s = "";
+            for(int i=0;i<1000;i++){
+                if(i<10){
+                    s = "00";
+                }else if(i<100){
+                    s = "0";
+                }else{
+                    s = "";
+                }
+                String s1 = jedis.get("jersey_"+province+ s + i);
+                if(s1!=null&&!s1.equals("null")&&!s1.equals("")){
+                    Entry entry = new Entry();
+                    entry.setKey(province+s+i);
+                    entry.setValue(s1);
+                    list.add(entry);
+                }
             }
-            String s1 = jedis.get("jersey_"+province+ s + i);
-            if(s1!=null&&!s1.equals("null")&&!s1.equals("")){
-                Entry entry = new Entry();
-                entry.setKey(province+s+i);
-                entry.setValue(s1);
-                list.add(entry);
-            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
         return list;
     }

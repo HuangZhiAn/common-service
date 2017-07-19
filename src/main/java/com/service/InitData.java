@@ -9,9 +9,7 @@ import com.google.gson.stream.JsonReader;
 import org.jvnet.hk2.annotations.Service;
 import redis.clients.jedis.Jedis;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -42,17 +40,20 @@ public class InitData {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
     }
 
-    public <T> List<T> getDatas(Class<T> c,String fileName) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+    public <T> List<T> getDatas(Class<T> c,String fileName) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException, UnsupportedEncodingException {
         Gson gson = new Gson();
         List list = null;
         try {
             URL url = InitData.class.getClassLoader().getResource(fileName);
             //URL路径有空格会变成%20，需要替换回去
             File file = new File(url.getFile().replaceAll("%20"," "));
-            list = gson.fromJson(new JsonReader(new FileReader(file)), List.class);
+            //指定文件编码，不然有可能会乱码
+            list = gson.fromJson(new JsonReader(new InputStreamReader(new FileInputStream(file), "UTF-8")), List.class);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -94,6 +95,7 @@ public class InitData {
                 }
             }
             String s = jedis.get("jersey_"+code);
+            System.out.println("redis:"+s+" file:"+name);
             if(s==null||!s.equals(name)){
                 jedis.set("jersey_"+code,name);
                 System.out.println("data change");

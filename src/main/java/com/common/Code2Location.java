@@ -33,11 +33,15 @@ public class Code2Location {
         if(jedisPool==null){
             System.out.println("true");
         }
-        Jedis jedis = jedisPool.getResource();
-        List<Entry> list = new ArrayList<Entry>();
-        for (String code:split) {
-            String s = jedis.get("jersey_" + code);
-            list.add(new Entry(code,s));
+        List<Entry> list = null;
+        try (Jedis jedis = jedisPool.getResource()){
+            list = new ArrayList<Entry>();
+            for (String code:split) {
+                String s = jedis.get("jersey_" + code);
+                list.add(new Entry(code,s));
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
         return list;
     }

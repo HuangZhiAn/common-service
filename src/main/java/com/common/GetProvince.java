@@ -26,20 +26,23 @@ public class GetProvince {
             list.add(new Entry("error","parameter (country)'s value invalid,expect (str[regexp:^[0-9]{3,3}]), but get ("+country+"), see doc for more info."));
             return list;
         }
-        Jedis jedis = jedisPool.getResource();
-        String s = "";
-        for(int i=0;i<1000;i++){
-            if(i<10){
-                s = "00";
-            }else if(i<100){
-                s = "0";
-            }else{
-                s = "";
+        try(Jedis jedis = jedisPool.getResource()){
+            String s = "";
+            for(int i=0;i<1000;i++){
+                if(i<10){
+                    s = "00";
+                }else if(i<100){
+                    s = "0";
+                }else{
+                    s = "";
+                }
+                String s1 = jedis.get("jersey_"+country+ s + i);
+                if(s1!=null&&!s1.equals("null")&&!s1.equals("")){
+                    list.add(new Entry(country+s + i,s1));
+                }
             }
-            String s1 = jedis.get("jersey_"+country+ s + i);
-            if(s1!=null&&!s1.equals("null")&&!s1.equals("")){
-                list.add(new Entry(country+s + i,s1));
-            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
         return list;
     }
